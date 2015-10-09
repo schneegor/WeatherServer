@@ -19,16 +19,17 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 """
 from django.conf.urls import include, url
 from django.contrib import admin
-from show_weather.views import index, csv_observation_request, csv_stations
+from show_weather.views import index, csv_observation_request, csv_stations, png_observation_request
 
 data_patterns = [
-    url(r'^csv/'
-        r'([0-9]+)/'                                         # Station ID
-        r'([0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2})'    # Start date
+    url(r'^(?P<station>[0-9]+)/'                                         # Station ID
+        r'(?P<start>[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2})'    # Start date
         r' - '
-        r'([0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2})$',  # End date
-        csv_observation_request),
-    url(r'^csv/stations/$', csv_stations)
+        r'(?P<end>[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2})/', include([  # End date
+        url(r'csv$', csv_observation_request),
+        url(r'png$', png_observation_request),])),
+    url(r'^csv/stations/$', csv_stations),
+
 ]
 
 urlpatterns = [
