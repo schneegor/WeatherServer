@@ -25,6 +25,8 @@ from django.http import HttpResponse
 from django.template import Context
 from django.template.loader import get_template
 
+import matplotlib.pyplot as plt
+
 from .models import Station, Observation
 
 
@@ -56,7 +58,6 @@ def csv_stations(request):
     response.seek(0)
     return HttpResponse(response)
 
-
 def csv_observation_request(request, station, start, end):
     """Return CSV of observations in requested time range."""
     response = StringIO()
@@ -75,4 +76,22 @@ def csv_observation_request(request, station, start, end):
         )
     )
     response.seek(0)
-    return HttpResponse(response)
+    return HttpResponse(response, content_type="text/html")
+
+def png_observation_request(request, station, start, end):
+    """Return PNG of observations in requested time range."""
+    obs = Observation.objects.filter(station__station_id=station,
+                                     obs_date__gte=start,
+                                     obs_date__lte=end)
+
+    #TODO create n sub plots for all relevant parameter or merge them in 1 plot	
+    # TODO how to loop over all elements and extract name along the way?
+    obsdata = [o.temperature for o in obs]
+
+    fig = plt.figure()
+    ax1 = fig.add_subplot(1,1,1)
+    plt.plot(obsdata)
+
+    response = HttpResponse(content_type="image/png")
+    plt.savefig(response, format="png")
+    return response
